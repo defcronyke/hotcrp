@@ -267,11 +267,16 @@ if (isset($Qreq->text)) {
 // retract review request
 if ((isset($Qreq->refuse) || isset($Qreq->decline))
     && ($Qreq->valid_post()
-        || ($Me->capability("@ra" . $prow->paperId) && !$Qreq->is_head()))) {
+        || ($Me->capability("@ra{$prow->paperId}") && !$Qreq->is_head()))) {
+    if ($paperTable->editrrow) {
+        $Qreq->r = $paperTable->editrrow->reviewId;
+    } else if (!$Qreq->r) {
+
+    }
     $decline_email = null;
     if ($paperTable->editrrow) {
         $Qreq->email = $decline_email = $paperTable->editrrow->email;
-    } else if (($ra_cid = $Me->capability("@ra" . $prow->paperId))
+    } else if (($ra_cid = $Me->capability("@ra{$prow->paperId}"))
                && ($ra_user = $Conf->cached_user_by_id($ra_cid))) {
         $Qreq->email = $decline_email = $ra_user->email;
     }
@@ -300,7 +305,7 @@ if ((isset($Qreq->refuse) || isset($Qreq->decline))
 
 if (isset($Qreq->accept)
     && ($Qreq->valid_post()
-        || ($Me->capability("@ra" . $prow->paperId) && !$Qreq->is_head()))) {
+        || ($Me->capability("@ra{$prow->paperId}") && !$Qreq->is_head()))) {
     $rrow = $paperTable->editrrow;
     if (!$rrow
         || (!$Me->is_my_review($rrow) && !$Me->can_administer($prow))) {
