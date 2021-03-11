@@ -2,6 +2,12 @@
 #                          Generated on phpdocker.io                          #
 ###############################################################################
 version: "3.1"
+
+networks:
+  default:
+    external:
+      name: ${HOTCRP_DOCKER_COMPOSE_SUBNET}
+
 services:
 
     mysql:
@@ -11,13 +17,15 @@ services:
       working_dir: /application
       volumes:
         - .:/application
+        - ${HOTCRP_LOCAL_MYSQL_DIR}:/var/lib/mysql
       environment:
-        - MYSQL_ROOT_PASSWORD=rootpwd
+        - MYSQL_ROOT_PASSWORD=${HOTCRP_DBROOTPASSWD}
         - MYSQL_DATABASE=hotcrp
-        - MYSQL_USER=hotcrp
-        - MYSQL_PASSWORD=hotcrppwd
+        - MYSQL_USER=${HOTCRP_DBUSER}
+        - MYSQL_PASSWORD=${HOTCRP_DBPASSWD}
       ports:
         - "9002:3306"
+      restart: always
 
     webserver:
       image: nginx:alpine
@@ -29,6 +37,8 @@ services:
       ports:
        - "9000:80"
        - "9443:443"
+      command: /bin/sh -c "echo -e \"/ndots:0\nd\nw\nq\" | ed /etc/resolv.conf; cat /etc/resolv.conf; nginx -g \"daemon off;\""
+      restart: always
 
     php-fpm:
       build: phpdocker/php-fpm
@@ -41,6 +51,7 @@ services:
       volumes:
         - .:/application
         - ./phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/7.2/fpm/conf.d/99-overrides.ini
+      restart: always
 
     phpmyadmin:
       image: phpmyadmin/phpmyadmin
@@ -51,7 +62,8 @@ services:
       environment:
         - PMA_HOST=hotcrp-database
         - PMA_PORT=3306
-        - PMA_USER=root
-        - PMA_PASSWORD=rootpwd
+        - PMA_USER=${HOTCRP_DBROOTUSER}
+        - PMA_PASSWORD=${HOTCRP_DBROOTPASSWD}
       ports:
         - "9005:80"
+      restart: always
