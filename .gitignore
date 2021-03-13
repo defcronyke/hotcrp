@@ -8,4 +8,5 @@ logs
 conf/options.php
 Code/options.inc
 docker-compose.yml
-.hotcrp-creds.env
+.hotcrp-docker-conf.env
+phpdocker/nginx/nginx.conf

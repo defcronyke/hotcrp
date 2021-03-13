@@ -10,10 +10,10 @@ networks:
 
 services:
 
-    mysql:
+    ${HOTCRP_DBHOST}:
       image: mysql:5.7
       command: --max_allowed_packet=104857600      # Set max_allowed_packet to 256M (or any other value)
-      container_name: hotcrp-database
+      container_name: ${HOTCRP_DBHOST}
       working_dir: /application
       volumes:
         - .:/application
@@ -24,46 +24,47 @@ services:
         - MYSQL_USER=${HOTCRP_DBUSER}
         - MYSQL_PASSWORD=${HOTCRP_DBPASSWD}
       ports:
-        - "9002:3306"
+        - "${HOTCRP_DBPORT}:3306"
       restart: always
 
-    webserver:
+    ${HOTCRP_WEBHOST}:
       image: nginx:alpine
-      container_name: hotcrp-web
+      container_name: ${HOTCRP_WEBHOST}
       working_dir: /application
       volumes:
           - .:/application
           - ./phpdocker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
       ports:
-       - "9000:80"
-       - "9443:443"
+       - "${HOTCRP_WEBPORT}:80"
+       - "${HOTCRP_WEBSPORT}:443"
+      # Fix dns resolver bug on alpine.
       command: /bin/sh -c "echo -e \"/ndots:0\nd\nw\nq\" | ed /etc/resolv.conf; cat /etc/resolv.conf; nginx -g \"daemon off;\""
       restart: always
 
-    php-fpm:
+    ${HOTCRP_PHPHOST}:
       build: phpdocker/php-fpm
-      container_name: hotcrp-php
+      container_name: ${HOTCRP_PHPHOST}
       working_dir: /application
       links:
-        - mysql
+        - ${HOTCRP_DBHOST}
       ports:
-        - "9001:9000"
+        - "${HOTCRP_PHPPORT}:9000"
       volumes:
         - .:/application
         - ./phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/7.2/fpm/conf.d/99-overrides.ini
       restart: always
 
-    phpmyadmin:
+    ${HOTCRP_PHPMYADMINHOST}:
       image: phpmyadmin/phpmyadmin
-      container_name: hotcrp-database-admin
+      container_name: ${HOTCRP_PHPMYADMINHOST}
       working_dir: /application
       links:
-        - mysql
+        - ${HOTCRP_DBHOST}
       environment:
-        - PMA_HOST=hotcrp-database
+        - PMA_HOST=${HOTCRP_DBHOST}
         - PMA_PORT=3306
         - PMA_USER=${HOTCRP_DBROOTUSER}
         - PMA_PASSWORD=${HOTCRP_DBROOTPASSWD}
       ports:
-        - "9005:80"
+        - "${HOTCRP_PHPMYADMINPORT}:80"
       restart: always

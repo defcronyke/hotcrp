@@ -11,8 +11,8 @@ server {
     }
 
     location ~ \.php$ {
-        resolver 127.0.0.11;
-        set $upstream php-fpm:9000;
+        resolver 127.0.0.11;    # Docker's DNS.
+        set $upstream ${HOTCRP_PHPHOST}:9000;
         fastcgi_pass $upstream;
         fastcgi_index index.php;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
