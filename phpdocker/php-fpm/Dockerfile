@@ -13,5 +13,5 @@ RUN apt-get update \
 
 # Install curl
 RUN apt-get update \
-    && apt-get -y install curl msmtp ca-certificates \
+    && apt-get -y install curl msmtp sendmail ca-certificates \
     && apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
